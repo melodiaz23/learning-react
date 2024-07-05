@@ -1,7 +1,9 @@
+# React
+
 JS **library** for building user interfaces.
 
 > [!Hint]
-> With react we write declarative code. We define the target UI state(s), not the steps to get there.
+> With react we write **declarative code**. We define the **target UI state(s)**, **not the steps** to get there.
 
 # Declarative Vs. Imperative Code
 
@@ -35,7 +37,6 @@ if (user.isLoggedIn){
 document.body.append(btn);
 
 ```
-
 
 
 # JS Refresher
@@ -426,14 +427,162 @@ React projects use a build process cause:
 > Minification means that for example, names of variables or functions are shortened to reduce the amount of JS code that's serve to the user.
 
 
-*React projects require a build process that transform our code.* So, NodeJS is not just used to install packages with the NPM command or to create projects with the NPX command, but it's also used behind the scenes by that build process.
+By default the code we write in react projects would not run in the browser, *React projects require a build process that transform our code.* So, NodeJS is not just used to install packages with the NPM command or to create projects with the NPX command, but it's also used behind the scenes by that build process.
 
 ## package.json
 | Lists all the dependencies of the project.
 
+With `npm install` we download and install any third party packages needed by the project (when the project has started already).
+
 ## Building UI with **Components**
 
+Components are potentially reusable blocks which we can create and which we them combine to build the overall UI.
+
+React Apps are build by **Combining Components**.
+
+
+> [!NOTE] 
+> Any website or app can be broken down into smaller building blocks: Components.
+
+- The idea behind that components are that they wrap HTML, CSS and JS logic that might be needed which together define and control a part of the UI.  
+
+![why-components](https://github.com/melodiaz23/react/blob/master/public/why-components.png?raw=true)
+
+*React components are just JS functions.*
+
+
+> [!NOTE] 
+> JSX allows us to define the target UI / HTML code right inside our JavaScript code - and therefore right inside our components.
+
+
+In a [Project](https://github.com/melodiaz23/react/tree/master/01-starting-project):
+
+- `App.jsx` 
+	- Contain the markup for the content. 
+	- This extension JS Syntax eXtension, is because it is a JS file that uses non-standard JS syntax.
+	- Browser do not support `.jsx`.
+	- Is a **React component**.
+	- Must follow two rules: 
+		- Name starts with Uppercase Character and multi-word names should be written in PascalCase.
+		- Returns "renderable" content (must return a value that can be **rendered** or "displayed on screen" by react).
+	- As developer we almost use JSX code exclusively inside of components functions.
+	- May contain as many nested components as needed (Component tree)
+- `index.jsx`
+	- `createRoot` and `render` methods are responsible for rendering a single root component (App component)
+
+  
+> React combines all the JSX code from all those components to generate the overall DOM (the elements that are showing up on the screen).
+
+
 ## Using, Sharing, & Outputting **Data**
+
+For output data to be displayed we need to wrap it with curly braces.
+
+```jsx
+<p>{data}</p>
+```
+> If statements, for-loops, function definitions and other block statements are not allowed here. Only expressions that directly produce a value.
+
+
+### Images files
+
+As part of the deployment process the code will be transform, and optimized, so we should use and import statement.
+
+```jsx
+import reactImg from './assets/react-core-concepts.png';
+
+// ...
+
+<img src={reactImg} alt="Stylized atom" />
+
+```
+> At the end `reactImg` is a JS object.
+
+### 'props'
+
+Being able to pass data into components.
+
+```jsx
+<CoreConcept title="Components" image={componentsImg} />
+```
+> tittle and image we call it 'prop'.
+
++ We can pass all kind of data: String, number, objects, arrays (any valid JS expression).
++ We can set dynamic values with the sane syntax we use in JSX, curly braces `{}`
++ The function/component only will receive one parameter, typically call `props`.
++ The value that will be pass as a parameter will be an object that has all the key-value pairs or custom attributes pass to the component.
+
+```jsx
+function CoreConcept(props) {
+return (
+<li>
+{/* The same name of the custom attributes has to be the same name of the key, in this case 'props.image' */}
+<img src={props.image} alt="..." />
+{/* ... */}
+)}
+```
+
+Alternative to `props.image`, we can use object destructuring as alternative:
+
+```jsx
+function CoreConcept({ image }) { // Use the same property names was defined as props
+  return (
+    <li>
+      <img src={image} alt="..." />
+      {/* ... */}
+    </li>
+  )
+}
+```
+
+
+- we can use the **spread operator** to pill out all the key-value pairs of the object, if:
+
+```js
+export const CORE_CONCEPTS = [
+{
+image: componentsImg,
+title: 'Components',
+description:
+'The core UI building block - compose the user interface by combining multiple components.',
+},
+// ...
+];
+```
+
+```jsx
+<CoreConcept {...CORE_CONCEPTS[0]} />
+```
+
+- if a component is used like this:
+
+```jsx
+<CoreConcept
+  title={CORE_CONCEPTS[0].title}
+  description={CORE_CONCEPTS[0].description}  
+  image={CORE_CONCEPTS[0].image} />
+```
+
+
+We could group the received props into a single object like this:
+
+```jsx
+export default function CoreConcept({ ...concept }) { 
+  // ...concept groups multiple values into a single object
+  // Use concept.title, concept.description etc.
+  // Or we can destructure the concept object: const { title, description, image } = concept;
+}
+```
+
+- Also, we can set a default value, in case some prop is not passed: 
+
+```jsx
+export default function Button({ caption, type = "submit" }) { 
+  // caption has no default value, type has a default value of "submit"
+}
+```
+> This can easily be achieved since JavaScript supports default values when using object destructuring
+
 
 ## Handling User **Events**
 
