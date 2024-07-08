@@ -2,7 +2,7 @@
 
 JS **library** for building user interfaces.
 
-> [!Hint]
+> [!Note]
 > With react we write **declarative code**. We define the **target UI state(s)**, **not the steps** to get there.
 
 # Declarative Vs. Imperative Code
@@ -37,6 +37,7 @@ if (user.isLoggedIn){
 document.body.append(btn);
 
 ```
+
 
 
 # JS Refresher
@@ -91,7 +92,7 @@ import * as util from "./util.js"; // Then we can get acces to util.apiKey or ut
 Variables are data containers where we store a value in a variable which carries any name of our choice. We assign a name to a variable and we can then use this variable name as an identifier.
 
 
-> [!Hint] Identifiers rules and recommendations
+> [!Note] Identifiers rules and recommendations
 > 1. Must not contain whitespace or special characters (except $ and `_`).
 > 2. May contain numbers but must not start with a number.
 > 3. Must not clash with reserved keywords.
@@ -473,6 +474,46 @@ In a [Project](https://github.com/melodiaz23/react/tree/master/01-starting-proje
   
 > React combines all the JSX code from all those components to generate the overall DOM (the elements that are showing up on the screen).
 
+### Components in files
+
+The convention is to give those files the same name as the component name of the component that will be stored in that file and then the `.jsx` extension since it will have JSX code in there.
+
+- To make sure we can use the component into another we need to import/export.
+- It could be exported as named export like this:
+
+```jsx
+export function Header() {
+/// 
+}
+```
+> It this case, import have to be with `{}`
+
+or as default export: 
+
+```jsx
+export default function Header() {
+// ...
+}
+```
+> In this case import will be: `import Header from './components/Header';`
+
+
+> [!NOTE] 
+> By default, React will only execute a component function **once**.
+
+
+### CSS files
+
+In CSS files, typically this are added with the components and are imported in the component file.
+
+```jsx
+import './Header.css';
+```
+
+
+> [!NOTE] 
+>  CSS file in a Component file will not scope these styles to that Component.
+
 
 ## Using, Sharing, & Outputting **Data**
 
@@ -501,6 +542,8 @@ import reactImg from './assets/react-core-concepts.png';
 ### 'props'
 
 Being able to pass data into components.
+
+**Every custom components will receive props**
 
 ```jsx
 <CoreConcept title="Components" image={componentsImg} />
@@ -584,9 +627,204 @@ export default function Button({ caption, type = "submit" }) {
 > This can easily be achieved since JavaScript supports default values when using object destructuring
 
 
+#### The special 'children' prop 
+
+```jsx
+<TabButton>Components</TabButton>
+```
+> Content inside custom components will be ignored by React by default.
+
+There is one prop that is always get by default, the special built-in **children prop**.
+
+children prop is a prop that's set by React and it's a prop that's not set with help of attributes.
+
+```jsx
+export default function TabButton(props) { // Could be {children}, as well
+  return <li>
+    <button>{props.children}</button> 
+    {/* <button>{children}</button>  */}
+  </li>
+}
+```
+> `children.prop` contains whichever content we have between our component tags (some text or some JSX structure).
+
+![children prop vs attribute props](https://github.com/melodiaz23/react/blob/master/public/children-vs-attributeprops.png?raw=true)
+
+
 ## Handling User **Events**
 
+### `onClick` prop
+
+The value for this `onClick` prop is a function.
+
+```jsx
+export default function TabButton({ children }) {
+  function handleClick() {
+    console.log('clicked');
+  }
+
+  return <li>
+    {/* handleClick must not be executed (not called), it is called only when the button is clicked */}
+    <button onClick={handleClick} >{children}</button>
+  </li>
+}```
+
+### Passing functions as Values to Props
+
+We also can a function between components. 
+
+```jsx
+// App.jsx
+function App() {
+  function handleSelect () {
+    console.log('selected');
+  }
+// ...
+<TabButton onSelect={handleSelect}>Components</TabButton>
+}
+
+```
+
+```jsx
+// TabButton.jsx
+
+export default function TabButton({ children, onSelect }) {
+  return <li>
+    <button onClick={onSelect} >{children}</button>
+  </li>
+}
+```
+> When the button is click `handleSelect` will be triggered.
+
+We can "configure" the execution of an event-dependent function, by wrapping the execution of our event handling function with another function:
+
+```jsx
+<TabButton onSelect={() => handleSelect()}>...</TabButton>
+```
+> Now we can control `handleSelect` and how this is executed.
+
 ## Building interactive UIs with **State**
+
+- States are the way to tell React that a component function should be executed again.
+- The concept of state involves registering variables that are managed by React and updated with the help of a function provided by React, which will cause React to update the UI.
+- These states are called **React Hooks**.
+- React hooks must only be called inside of React component functions or inside of other React Hooks.
+
+
+> [!NOTE] Rules of Hooks
+> - Only call Hooks **inside of Component Functions**
+> - Only call Hooks **on the top level**
+
+For `useState`:
+
+```jsx
+import { useState } from 'react';
+
+function App() {
+  const [selectedTopic, setSelectedTopic] = useState('Please click a button'); // It must be called on the top level
+  // ... 
+}
+```
+
+![Manage State](https://github.com/melodiaz23/react/blob/master/public/manage-state.png?raw=true)
+
+For set a new value, we can do it like this: 
+
+```jsx
+function App() {
+  const [selectedTopic, setSelectedTopic] = useState('Please click a button');
+  function handleSelect (selectedButton) {
+    setSelectedTopic(selectedButton);
+    console.log(selectedTopic);
+  }
+```
+> When we call `setSelectedTopic`, React "schedules" the state, so the update value will only be available after the app component function executed again.
+> 
+
+### Rendering content conditionally 
+
+We can output content conditionally with React.
+
+```jsx
+ <div id="tab-content">
+	{!selectedTopic ? (
+	  <p>Please select a topic.</p>
+	) : (<>
+	  <h3>{EXAMPLES[selectedTopic].title}</h3>
+	  <p>{EXAMPLES[selectedTopic].description}</p>
+	  <pre>
+		<code>{EXAMPLES[selectedTopic].code}</code>
+	  </pre>
+	</>
+	)}
+</div>
+```
+
+As alternative:
+
+```jsx
+ let tabContent = <p>Please select a topic.</p>
+
+  if (selectedTopic) {
+    tabContent = <>
+      <h3>{EXAMPLES[selectedTopic].title}</h3>
+      <p>{EXAMPLES[selectedTopic].description}</p>
+      <pre>
+        <code>{EXAMPLES[selectedTopic].code}</code>
+      </pre>
+    </>
+  }
+
+// ...
+
+<div id="tab-content">
+	{tabContent}
+</div>
+```
+> JSX code can be store in a variable.
+
+## CSS Styling
+
+In React we can set a class with the `className` prop.
+
+## List data
+
+JSX is capable of dealing with arrays of renderable data but it is not able to output JS objects.
+
+So we need to transform the array of objects in an array of JSX elements,
+
+Instead:
+
+```jsx
+<section id='core-concepts'>
+  <h2>Time to get started!</h2>
+  <ul>
+	<CoreConcept {...CORE_CONCEPTS[0]} />
+	<CoreConcept {...CORE_CONCEPTS[1]} />
+	<CoreConcept {...CORE_CONCEPTS[2]} />
+	<CoreConcept {...CORE_CONCEPTS[3]} />
+  </ul>
+</section>
+```
+
+We can write it like this: 
+
+```jsx
+<section id='core-concepts'>
+  <h2>Time to get started!</h2>
+  <ul>
+	{CORE_CONCEPTS.map(conceptItem => 
+	  <CoreConcept key={conceptItem.title} {...concept} />
+	)}
+  </ul>
+</section>
+```
+> Since each child in a list should have an unique "key" prop, we need to add this special prop. 
+> Under the hood, it's used by React to efficiently render and update the list.
+
+
+> [!NOTE] Outputting data
+> When dynamically outputting a list of elements, every element should receive a unique "key" to help React tell the list items apart.
 
 
 # Resources
