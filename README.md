@@ -430,6 +430,8 @@ React projects use a build process cause:
 
 By default the code we write in react projects would not run in the browser, *React projects require a build process that transform our code.* So, NodeJS is not just used to install packages with the NPM command or to create projects with the NPX command, but it's also used behind the scenes by that build process.
 
+![Build Process](https://github.com/melodiaz23/learning-react/blob/master/public/build-process.png?raw=true)
+
 ## package.json
 | Lists all the dependencies of the project.
 
@@ -579,7 +581,7 @@ function CoreConcept({ image }) { // Use the same property names was defined as 
 ```
 
 
-- we can use the **spread operator** to pill out all the key-value pairs of the object, if:
+- we can use the **spread operator** to spill out all the key-value pairs of the object, if:
 
 ```js
 export const CORE_CONCEPTS = [
@@ -605,7 +607,6 @@ description:
   description={CORE_CONCEPTS[0].description}  
   image={CORE_CONCEPTS[0].image} />
 ```
-
 
 We could group the received props into a single object like this:
 
@@ -649,6 +650,176 @@ export default function TabButton(props) { // Could be {children}, as well
 > `children.prop` contains whichever content we have between our component tags (some text or some JSX structure).
 
 ![children prop vs attribute props](https://github.com/melodiaz23/react/blob/master/public/children-vs-attributeprops.png?raw=true)
+
+## Splitting components
+
+- Having a single component that deals with different things typically is a sign that we might need to split it.
+	- Putting different features into different Components is a good idea
+- If we use a [state](#building-interactive-uis-with-state) that makes the app re-render and affects other components, we might need to split it.
+
+
+> [!NOTE] 
+> Split our code across multiple components can make working on that project easier. 
+
+## Additional Key component and Props concepts
+
+#### Forwarded props
+
+When we are setting props (attributes) on a custom component those props **are not** automatically forwarded to the JSX use inside that component. 
+
+**Props must be used & set explicitly**
+
+For that, we can use rest operator `...` and then any identifier of our choice.
+
+```jsx
+// Examples.jsx
+
+//...
+return (
+	<Section title="Examples" id="examples">
+	{/* ... */}
+	</Section>
+)
+
+```
+
+```jsx
+// Section.jsx
+
+export default function Section({ title, children, ...props }) { // ... Alow to group multiple props
+  return (
+    // ... allow us to pass all the props to the section
+    <section {...props}>
+      <h2>{title}</h2>
+      {children}
+    </section>
+  )
+}
+```
+> This is useful when building wrapper component as Section.
+
+
+#### Multiple components slots
+
+We can set multiple slots:
+
+```tsx
+// Tabs.tsx
+import React from 'react';
+// Define a Tabs component with two slots: children and buttons
+export default function Tabs({ children, buttons }) {
+  return (
+     <>
+      <menu>
+        {buttons}
+      </menu>
+      <div id="tab-content">
+        {children}
+      </div>
+    </>
+  );
+}
+```
+> These props allow us to pass different React nodes to be rendered in distinct parts of the component. The `menu` element renders the `buttons` prop, and the main content area renders the `children` prop.
+
+```tsx
+// Examples.tsx
+import React, { useState } from 'react';
+import Tabs from './Tabs';
+
+export default function Examples() {
+  const [selectedTopic, setSelectedTopic] = useState('components');
+
+  // Function to handle tab selection
+  const handleSelect = (topic) => {
+    setSelectedTopic(topic);
+  };
+
+  // Content corresponding to each tab
+  const tabContent = <div>{/* Render content based on selectedTopic */}</div>;
+
+  return (
+    <Section title="Examples" id="examples">
+      <Tabs
+        buttons={
+          <>
+            <TabButton isSelected={selectedTopic === 'components'} onClick={() => handleSelect('components')}>
+              Components
+            </TabButton>
+            <TabButton isSelected={selectedTopic === 'jsx'} onClick={() => handleSelect('jsx')}>
+              JSX
+            </TabButton>
+            <TabButton isSelected={selectedTopic === 'props'} onClick={() => handleSelect('props')}>
+              Props
+            </TabButton>
+            <TabButton isSelected={selectedTopic === 'state'} onClick={() => handleSelect('state')}>
+              State
+            </TabButton>
+          </>
+        }
+      >
+        {tabContent}
+      </Tabs>
+    </Section>
+  );
+}
+
+```
+> This pattern provides a flexible way to build UI components that require distinct sections with varying content, promoting reusability and clean separation of concerns.
+
+#### Element identifiers as Props
+
+In React, we can use an element identifier as a value for a component's prop. This pattern allows us to dynamically choose which element or component should be used for rendering.
+
+```jsx
+// Using a built-in element as a string identifier
+<Tabs buttonsContainer="menu">
+  {/* ... */}
+</Tabs>
+
+// Using a custom component as a dynamic value
+<Tabs buttonsContainer={CustomComponent}>
+  {/* ... */}
+</Tabs>
+
+```
+> For built-in elements like menu or div we pass the identifier as string.
+> For Custom components we must be passed as a "dynamic" value: `{CustomComponent}`.
+
+For implementation: 
+
+```jsx
+// Tabs.js or Tabs.jsx
+import React from 'react';
+
+// export default function Tabs({ ButtonsContainer }) {
+export default function Tabs({ ButtonsContainer }) {
+  // The identifier must be a capitalized variable to be used as a component
+  // const ButtonsContainer = buttonsContainer;
+  // Without const, another way is dynamically set buttonsContainer with uppercase chararecter at the starts.
+
+  return (
+    <>
+      <ButtonsContainer>
+        {/* Additional content or elements go here */}
+      </ButtonsContainer>
+    </>
+  );
+}
+
+```
+> With that react will look for a custom or built-in element as a wrapper for that element. This way we're able to dynamically set the wrapper that should be used around an specific element.
+
+#### Default prop values
+
+We can set default prop values in React by providing default values.
+
+```jsx
+export default function Tabs({ children, buttons, ButtonsContainer = 'menu' }) {
+	//...
+}
+```
+> If no value is passed for the `ButtonsContainer` prop, it defaults to `'menu'`.
 
 
 ## Handling User **Events**
@@ -704,6 +875,7 @@ We can "configure" the execution of an event-dependent function, by wrapping the
 > Now we can control `handleSelect` and how this is executed.
 
 ## Building interactive UIs with **State**
+| Give our components the ability to remember things.
 
 - States are the way to tell React that a component function should be executed again.
 - The concept of state involves registering variables that are managed by React and updated with the help of a function provided by React, which will cause React to update the UI.
@@ -740,6 +912,67 @@ function App() {
 ```
 > When we call `setSelectedTopic`, React "schedules" the state, so the update value will only be available after the app component function executed again.
 > 
+
+### useEffect
+
+```jsx
+// A function that can return a cleanup function. Accepts a function that contains imperative, possibly effectful code
+ useEffect(() => { 
+  }, []) 
+
+```
+> Is important to add a list of dependencies for less useEffect. We provide this as a list (as an array), if this is present, effect will only activate if the values of the list change.
+> - If we provide and empty array we say that the effect is execute once, only.
+
+
+```jsx
+  useEffect(() => { 
+    fetch('http://localhost:3000/heroes').then(res => {
+      return res.json(); // parses JSON response into native JavaScript objects
+    }).then(data => { // This is where we get access to the data inside our response.
+      setHeroes(data); // Replace the empty heroes array with the data we get from the server
+    })
+
+    // Cleanup function
+    return () => { 
+      
+    }
+  }, [])  // useEffect will be called twice in development mode: once when the component mounts and once when it unmounts. This helps prevent bugs inside a useEffect.
+
+```
+
+To prevent `useEffect` from calling twice and, in this case, fetching data twice, we can use a `useRef` hook.
+
+```jsx
+export default function App() {
+  const fetched = useRef(false);
+
+  useEffect(() => {
+    if(!fetched.current) {
+      fetch('http://localhost:3000/heroes').then(res => {
+      return res.json(); 
+    }).then(data => { 
+      setHeroes(data);
+    });
+
+    fetched.current = true; // This way we prevent useEffect from fetching the same data twice.
+    }
+    return () => { 
+    }
+  }, [])
+```
+> `useRef` return a mutable ref object, that will persist for the full lifetime of the component.
+
+Once we fetch data, what we usually have in an applications is routing, with react we need a third party package for that. 
+
+```bash
+npm i react-router-dom
+```
+# React context
+
+When we need to centralized states, because we are in a situation where our components are no longer children of a parent component, we use React Context.
+
+
 
 ### Rendering content conditionally 
 
@@ -823,8 +1056,151 @@ We can write it like this:
 > Under the hood, it's used by React to efficiently render and update the list.
 
 
-> [!NOTE] Outputting data
+> [!NOTE] 
 > When dynamically outputting a list of elements, every element should receive a unique "key" to help React tell the list items apart.
+
+## Fragments
+
+Since we can't return 2 values in a normal function, we can not return 2 values in JSX code,, thats the reason we have in React a special fragment component `<>` `</>` which can be use, as alternative to wrapping elements.
+
+```jsx
+import { Fragment } from 'react'; // older projects
+//...
+
+function App() {
+	return (
+		// <Fragment>
+		<>
+		{/* ... */}
+		</>
+		// </Fragment>
+	);
+}
+```
+> By using a fragment instead of `<div>` `</div>`, we will not generate extra unnecessary div elements in the DOM.
+> Instead of fragment newest project just need an empty tag.
+
+## Create React Project
+
+- Vite will create a React kind of project.
+
+```bash
+npm create vite@latest
+cd name-of-the-project
+```
+
+Install a developer dependency of Tailwind, postcss and autoprefixer
+
+```Shell
+npm install -D tailwindcss postcss autoprefixer
+npx tailwindcss init -p
+```
+
+- Tailwind set-up
+
+```js
+// tailwind.config.js
+
+/** @type {import('tailwindcss').Config} */
+export default {
+  content: [
+    "./index.html",
+    "./src/**/*.{js,ts,jsx,tsx}",
+  ],
+  theme: {
+    extend: {},
+  },
+  plugins: [],
+}
+```
+
+```css
+
+/* index.css */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+```
+
+- Then run: 
+
+```Shell
+npm run dev
+```
+
+# API Server
+
+## JSON Server
+
+The JSON server is going to do all the hard work. It's going to take the JSON file that we have and give us the API endpoints to get post, put and delete the elements inside that JSON file and give us those API endpoints.
+
+```Shell
+> npm i json-server
+> npx json-server ***.json
+```
+> `npx` json-server following with the location of the JSON file.
+
+# Routing
+
+To set up routing in React, you can use the `react-router-dom` package.
+
+```Bash
+npm i react-router-dom
+```
+
+Set up the routes:
+
+```jsx
+//main.tsx
+import React from 'react'
+import ReactDOM from 'react-dom';
+import App from './App';
+import './index.css'
+import { createBrowserRouter, Navigate, RouterProvider } from 'react-router-dom';
+import Dashboard from './components/Dashboard';
+import HeroesList from './components/HeroesList';
+
+// Here we define the routes
+const router = createBrowserRouter([
+  {
+    path: '/',
+    element: <App />,
+    // Children elements that will be rendered with outlet.
+    children: [
+      {index: true, element: <Navigate replace to="/dashboard" /> },
+      { path: '/dashboard', element: <Dashboard /> },
+      { path: '/heroes', element: <HeroesList /> },
+    ]
+  }
+])
+
+ReactDOM.createRoot(document.getElementById('root')!).render(
+  <React.StrictMode>
+    {/* <App /> */}
+    <RouterProvider router={router} />
+  </React.StrictMode>,
+)
+```
+>  Inside our roots inside the `main.ts` we have our root element which is the app component.
+
+And, we need to ensure our `App` component renders the child routes: 
+
+```jsx
+// App.tsx
+import { Outlet } from "react-router-dom";
+
+export default function App() {
+  return (
+    <div className="mt-5 container mx-auto flex justify-between gap-6">
+      <div>
+        {/* Outlet will be responsible for rendering the child routes element if there is any */}
+        <Outlet /> 
+      </div>
+    </div>
+  )
+} 
+```
+> In `App` component is where our children get rendered
 
 
 # Resources
