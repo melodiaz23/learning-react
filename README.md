@@ -1,5 +1,6 @@
 # React
 
+
 JS **library** for building user interfaces.
 
 > [!Note]
@@ -1326,6 +1327,16 @@ export default function App() {
 } 
 ```
 > In `App` component is where our children get rendered
+
+
+# Debugging React Apps
+
+## Strict Mode
+
+- `StrictMode` is a built-in React component that can be wrapped around other components.
+- Typically used in `Index.jsx` around the root `App` component but can be applied to specific components for targeted error checking.
+- Helps catch issues by double-executing components, highlighting errors like unintentional side effects or incorrect state handling.
+- Using `StrictMode` surfaces errors immediately, without needing user interaction.
 
 
 # Resources
