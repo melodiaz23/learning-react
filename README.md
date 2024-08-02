@@ -989,6 +989,95 @@ Once we fetch data, what we usually have in an applications is routing, with rea
 npm i react-router-dom
 ```
 
+### UseRef
+
+- Refs in React are special values managed by React, similar to state or variables.
+- They allow you to access and interact with DOM elements directly.
+- Refs are typically stored in a constant or variable and named according to their purpose (e.g., `input` or `playerName`).
+- They are useful for scenarios where you need to read values from input fields without logging every keystroke.
+
+```jsx
+import { useRef, useState } from "react";
+
+export default function Player() {
+  const playerName = useRef(null);
+  const [enteredPlayerName, setEnteredPlayerName] = useState('Unknown');
+
+  function handleClick() {
+    // Access all methods and properties of the DOM element using the current property
+    setEnteredPlayerName(playerName.current.value);
+    playerName.current.value = ''; // React is not about manipulating the DOM. So it must be use with care.
+  }
+
+  return (
+    <section id="player">
+      {/* ?? operator returns enteredPlayerName if it's not null or undefined, otherwise 'unknown' */}
+      <h2>Welcome {enteredPlayerName ?? 'unknown'} </h2>
+      <p>
+        {/* The ref prop allows us to access the DOM element directly */}
+        <input type="text" ref={playerName} />
+        <button onClick={handleClick}>Set Name</button>
+      </p>
+    </section>
+  );
+}
+
+```
+> Avoid overusing refs for reading and manipulating various page values, as it can lead to a codebase that contradicts React’s principles.
+
+==Whenever a ref changes, the component function does not re-execute.==
+
+![State Vs. Refs](https://github.com/melodiaz23/learning-react/blob/master/public/state-vs-ref.png?raw=true)
+
+- When we use `useRef`, React stores the values behind the scenes and ensures they don't get lost if the component function re-executes.
+- Using refs avoids unnecessary re-renders, improving performance when the timer state does not need to trigger UI updates.
+
+
+```jsx
+import { useState, useRef } from 'react';
+
+// let timer; // Using a variable to store the timer ID is not recommended as it will be shared across all component instances, leading to unexpected behavior.
+
+export default function TimerChallenge({ title, targetTime }) {
+  const [timerStarted, setTimerStarted] = useState(false);
+  const [timerExpired, setTimerExpired] = useState(false);
+
+  const timer = useRef(); // It will be a component instance specific since this is defined inside of the component.
+
+  // Every component instance of this TimerChallenge component will get its own timer ref that works totally independent from the other refs that belong to the other instances of that component.
+
+
+  function handleStart() {
+    timer.current = setTimeout(() => {
+      setTimerExpired(true);
+    }, targetTime * 1000);
+    setTimerStarted(true);
+  }
+
+  function handleStop() {
+    // ClearTimeout(); from js allow us to stop the timer. It needs a pointer to stop the timer
+    clearTimeout(timer.current);
+  }
+
+  return (
+    <section className="challenge">
+      <h2>{title}</h2>
+      {timerExpired && <p>You lost!</p>}
+      <p className="challenge-time">
+        {targetTime} second{targetTime === 1 ? '' : 's'}
+      </p>
+      <p>
+        <button onClick={timerStarted ? handleStop : handleStart}>{timerStarted ? 'Stop' : 'Start'} Challenge</button>
+      </p>
+      <p className={timerStarted ? 'active' : undefined}>
+        {timerStarted ? 'Time is running' : 'Timer inactive'}
+      </p>
+    </section>
+  )
+}
+```
+> `useRef` creates a component instance-specific reference, allowing each instance of the `TimerChallenge` component to have its own timer that works independently.
+
 ## Two way binding
 
 With JSX: 
@@ -1206,7 +1295,17 @@ function App() {
 > By using a fragment instead of `<div>` `</div>`, we will not generate extra unnecessary div elements in the DOM.
 > Instead of fragment newest project just need an empty tag.
 
-## Create React Project
+> [!NOTE]
+> A JSX value must have only one root element.
+
+# Refs and Portals
+
+## DOM elements with ref
+
+## API functions with components
+
+## Portals
+# Create React Project
 
 - Vite will create a React kind of project.
 
