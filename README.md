@@ -541,6 +541,14 @@ import reactImg from './assets/react-core-concepts.png';
 ```
 > At the end `reactImg` is a JS object.
 
+
+> [!NOTE] 
+> - We can store images in the `public/` folder and then **directly reference** them from inside your `index.html` or `index.css` files.
+> - Any files (of any format) stored in `src` (or subfolders like `src/assets/`) are **not made available to the public**.
+> - Files stored in `src/` (and subfolders) can be used in our code files. Images imported into code files are then picked up by the underlying build process, potentially optimized, and kind of _"injected"_ into the `public/` folder right before serving the website.
+> - We should use the `public/` folder for any images that should **not be handled by the build process** and that should be **generally available** like images are used directly in the `index.html` file or favicons. 
+> - Images that are used **inside of components** should typically be stored in the `src/` folder (e.g., in `src/assets/`).
+
 ### 'props'
 
 Being able to pass data into components.
@@ -661,6 +669,7 @@ export default function TabButton(props) { // Could be {children}, as well
 > [!NOTE] 
 > Split our code across multiple components can make working on that project easier. 
 
+==Whenever we are using or reusing a component, React will create a new isolated instance==
 ## Additional Key component and Props concepts
 
 #### Forwarded props
@@ -913,6 +922,16 @@ function App() {
 > When we call `setSelectedTopic`, React "schedules" the state, so the update value will only be available after the app component function executed again.
 > 
 
+### Updating State
+
+
+> [!NOTE]
+> In React, when we are updating the state based on the previous value of that state, we should not do it like:
+> `setIsEditing(!isEditing);`
+> Instead, when updating the state based on the previous value of that state, we should pass a function to that state updating function:
+> `setIsEditing( wasEditing => !wasEditing)`
+> This function will be call by React and it will automatically get the **current state value**, at the point of time where this scheduled update is executed.
+
 ### useEffect
 
 ```jsx
@@ -968,6 +987,112 @@ Once we fetch data, what we usually have in an applications is routing, with rea
 ```bash
 npm i react-router-dom
 ```
+
+## Two way binding
+
+With JSX: 
+
+```jsx
+  if (isEditing) {
+    // value={name} overwrites the value of the input
+    // defaultValue={name} set an initial value
+    playerName = <input type="text" required defaultValue={name} />
+    // value alow us to set the value of the input
+  }
+```
+> `defaultValue` is a way of change the input but the value is not updating, when is needed.
+
+A better way to updated the value is using State:
+
+```js
+import { useState } from "react";
+export default function Player({ initialName, symbol }) {
+
+  const [playerName, setPlayerName] = useState(initialName);
+  const [isEditing, setIsEditing] = useState(false);
+
+  const handleEditClick = () => {
+    setIsEditing(editing => !editing);
+  }
+
+  function handleNameChange(event) {
+    // React will give an event object as an argument to the function
+    setPlayerName(event.target.value);
+  }
+
+  let editablePlayerName = <span className="player-name">{playerName}</span>
+
+  if (isEditing) {
+    // value={name} alow us to set the value of the input and overwrites the value of the input
+    // defaultValue={name} set an initial value
+    editablePlayerName = <input type="text" required value={playerName} onChange={handleNameChange} />
+    // The way of listening for changes in the input is called two-way binding because we're getting a value out of the input and feeding a value back into the input.
+  }
+
+
+  return (
+    <><li>
+      <span className="player">
+        {editablePlayerName}
+        <span className="player-symbol">{symbol}</span>
+      </span>
+      <button onClick={() => handleEditClick()}>{isEditing ? "Save" : "Edit"}</button>
+    </li>
+    </>
+  )
+}
+```
+
+## Updating State
+
+
+> [!NOTE] 
+> It's strongly recommended that if our state is an **object** or **array**, we update that state in an immutable way, which means create a copy of the old state, and then that copy instead.
+
+```jsx
+import { useState } from "react";
+
+const initialGameBoard = [[null, null, null], [null, null, null], [null, null, null]];
+
+export default function GameBoard() {
+
+  const [gameBoard, setGameBoard] = useState(initialGameBoard);
+  
+  function handleSelectSquare(rowIndex, colIndex) {
+    setGameBoard(prevGameBoard => {
+      const updateBoard = [...prevGameBoard.map(innerArray => [...innerArray])]; // This is a deep copy of the array
+      updateBoard[rowIndex][colIndex] = "X";
+      return updateBoard;
+    })
+  }
+
+  return (
+    <ol id="game-board">
+      {gameBoard.map((row, rowIndex) => <li key={rowIndex}><ol>
+        {row.map((playerSymbol, colIndex) =>
+          <li key={colIndex}>
+            <button onClick={() => handleSelectSquare(rowIndex, colIndex)}>{playerSymbol}</button>
+          </li>)}
+      </ol></li>)}
+    </ol>
+  )
+}
+```
+
+## Lifting state up
+
+It consist in lift the state up to the **closest ancestor component** that has access to all components that need to work with that state.
+
+![lifting-state-up](https://github.com/melodiaz23/learning-react/blob/master/public/lifting-state-up.png?raw=true)
+
+## Deriving State
+
+When we produce some computed value that is derived from some state.
+
+
+> [!NOTE] 
+> We should manage as **little state as needed** and try to derive as much information and as many values as possible from that state.
+
 # React context
 
 When we need to centralized states, because we are in a situation where our components are no longer children of a parent component, we use React Context.
