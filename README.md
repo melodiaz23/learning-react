@@ -1304,6 +1304,11 @@ function App() {
 
 ## API functions with components
 
+
+> [!NOTE] 
+> API stands for "Application Programming Interface", and a REST API is a web server that exposes certain pre-defined routes to which HTTP requests can be sent.
+
+
 ## Portals
 # Create React Project
 
@@ -1437,6 +1442,46 @@ export default function App() {
 - Helps catch issues by double-executing components, highlighting errors like unintentional side effects or incorrect state handling.
 - Using `StrictMode` surfaces errors immediately, without needing user interaction.
 
+# HTTP Requests
+
+- When writing code that runs in the browser, all our React application code runs in the browsers of our visitors. So our visitors can access that code and they can view that code.
+- Not all operations can be performed in the browser.
+- A central server or backend is essential for apps where multiple users need to share data.
+- A backend server acts as an **intermediary** between the React app and the database.
+- Backend code is **protected** from users, ensuring secure data handling.
+- To connect frontend with the backend we use HTTP Request. 
+- The backend server exposes **endpoints** to control allowed requests and ensure security.
+- **Separate projects** are common for frontend (React app) and backend.
+- Different languages (e.g., JavaScript, PHP, C#) can be used for the backend.
+- Frameworks like **Next.js** or **Remix** allow blending frontend and backend.
+
+
+```jsx
+import Places from './Places.jsx';
+
+export default function AvailablePlaces({ onSelectPlace }) {
+  const [availablePlaces, setAvailablePlaces] = useState([]);
+
+  // Fetch will send a get request to the URL
+  fetch('http://localhost:3000/places').then((res) => {
+    if (res.ok) {
+      return res.json(); // json is the facto standard data format for exchanging data with the backend.
+    }
+  }).then((data) => {
+    setAvailablePlaces(data.places) // This will create an infinite loop, since we are using state, which will re-render the component.
+  })
+
+  return (
+    <Places
+      title="Available Places"
+      places={[]}
+      fallbackText="No places available."
+      onSelectPlace={onSelectPlace}
+    />
+  );
+}
+```
+> The infinity loop fix, wrapping the code into a useEffect.
 
 # Resources
 #Resources 
